@@ -1,67 +1,45 @@
 {
   "name": "@percy/cypress",
+  "description": "Cypress client library for visual testing with Percy",
   "version": "2.3.1",
-  "description": "Cypress client library for visual regression testing with Percy (https://percy.io).",
-  "main": "dist/index.js",
-  "types": "index.d.ts",
-  "scripts": {
-    "pretest": "yarn build",
-    "test": "percy exec -- node run-tests.js",
-    "test:debug": "LOG_LEVEL=debug yarn test",
-    "clean": "rm -rf dist/",
-    "build": "yarn clean && tsc",
-    "prepublish": "yarn build",
-    "lint": "tslint -p . -t stylish --fix",
-    "cypress:open": "cypress open"
-  },
-  "resolutions": {
-    "ecstatic": "3.2.2"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/percy/percy-cypress.git"
-  },
-  "keywords": [
-    "cypress"
-  ],
-  "engines": {
-    "node": ">=10.0.0"
-  },
-  "author": "Perceptual Inc.",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/percy/percy-cypress/issues"
-  },
-  "homepage": "https://github.com/percy/percy-cypress#readme",
-  "devDependencies": {
-    "@oclif/tslint": "^3.1.0",
-    "@semantic-release/changelog": "^5.0.0",
-    "@semantic-release/git": "^9.0.0",
-    "cypress": "^5.1.0",
-    "http-server": "^0.12.0",
-    "semantic-release": "^17.0.4",
-    "tslint": "^6.0.0",
-    "typescript": "^4.0.2"
-  },
-  "dependencies": {
-    "@percy/agent": "~0",
-    "axios": "^0.20.0"
+  "author": "Perceptual Inc.",
+  "repository": "https://github.com/percy/percy-cypress",
+  "keywords": [
+    "cypress",
+    "percy",
+    "visual testing"
+  ],
+  "main": "index.js",
+  "types": "types/index.d.ts",
+  "files": [
+    "index.js",
+    "types/index.d.ts"
+  ],
+  "scripts": {
+    "lint": "eslint --ignore-path .gitignore .",
+    "test": "cypress run",
+    "coverage": "nyc report --check-coverage",
+    "test:coverage": "yarn test && yarn coverage",
+    "test:types": "tsd"
   },
   "peerDependencies": {
-    "cypress": "^3 || ^4"
+    "@percy/cli": ">=1",
+    "cypress": ">=3"
   },
-  "release": {
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      [
-        "@semantic-release/changelog",
-        {
-          "changelogFile": "CHANGELOG.md"
-        }
-      ],
-      "@semantic-release/npm",
-      "@semantic-release/git"
-    ]
+  "devDependencies": {
+    "@cypress/code-coverage": "^3.8.1",
+    "@percy/cli": "^1.0.0-beta.15",
+    "babel-plugin-istanbul": "^6.0.0",
+    "cypress": "^5.1.0",
+    "eslint": "^7.9.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-cypress": "^2.11.2",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "nyc": "^15.1.0",
+    "tsd": "^0.13.1"
   }
 }
