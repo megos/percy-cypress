@@ -1,5 +1,3 @@
-import serializeDOM from '@percy/dom';
-
 // Collect client and environment information
 const sdkPkg = require('./package.json');
 const CLIENT_INFO = `${sdkPkg.name}/${sdkPkg.version}`;
@@ -18,20 +16,36 @@ function log(message, meta) {
   });
 }
 
-// Check if Percy is enabled using the healthcheck endpoint
+// Check if Percy is enabled while injecting the @percy/dom script
 export function isPercyEnabled() {
   if (isPercyEnabled.result != null) {
     return Promise.resolve(isPercyEnabled.result);
   } else {
     return Cypress.backend('http:request', {
-      url: `${PERCY_CLI_API}/healthcheck`,
+      url: `${PERCY_CLI_API}/dom.js`,
       retryOnNetworkFailure: false
-    }).then(({ body: { success, error } }) => {
-      if (!success) throw new Error(error);
-      return (isPercyEnabled.result = true);
+    }).then(r => {
+      if (!r.isOkStatusCode) {
+        throw new Error(r.body.error || `${r.status} ${r.statusText}`);
+      } else {
+        isPercyEnabled.version = r.headers['x-percy-core-version'] || '0';
+        isPercyEnabled.result = true;
+        eval(r.body); // eslint-disable-line no-eval
+      }
     }).catch(error => {
-      log('Percy is not running, disabling snapshots', { error });
-      return (isPercyEnabled.result = false);
+      isPercyEnabled.result = false;
+      return error;
+    }).then(error => {
+      let { version } = isPercyEnabled;
+
+      if (version && parseInt(version, 10) !== 1) {
+        log('Unsupported Percy CLI version, disabling snapshots', { version });
+        isPercyEnabled.result = false;
+      } else if (!isPercyEnabled.result) {
+        log('Percy is not running, disabling snapshots', { error });
+      }
+
+      return isPercyEnabled.result;
     });
   }
 }
@@ -48,6 +62,9 @@ Cypress.Commands.add('percySnapshot', (name, options) => {
     } else {
       // Serialize and capture the DOM
       cy.document({ log: false }).then(dom => {
+        // Should have been injected by now
+        let { PercyDOM: { serialize } } = window;
+
         // Post the DOM to the snapshot endpoint with snapshot options and other info
         return Cypress.backend('http:request', {
           url: `${PERCY_CLI_API}/snapshot`,
@@ -56,14 +73,17 @@ Cypress.Commands.add('percySnapshot', (name, options) => {
             ...options,
             environmentInfo: ENV_INFO,
             clientInfo: CLIENT_INFO,
-            domSnapshot: serializeDOM({ ...options, dom }),
+            domSnapshot: serialize({ ...options, dom }),
             url: dom.URL,
             name
           })
         // Handle errors
-        }).then(({ body: { success, error } }) => {
-          if (!success) throw new Error(error);
-          log(name, { name, ...options });
+        }).then(r => {
+          if (!r.isOkStatusCode) {
+            throw new Error(r.body.error || `${r.status} ${r.statusText}`);
+          } else {
+            log(name, { name, ...options });
+          }
         }).catch(error => {
           log(`Could not take DOM snapshot "${name}"`, { name, error });
         });

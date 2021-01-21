@@ -1,56 +1,40 @@
-const createTestServer = require('@percy/core/test/helpers/server');
-
-// mock testing site
-createTestServer({
-  default: () => [200, 'text/html', 'Snapshot Me']
-}).then(({ close }) => {
-  process.on('exit', close);
-});
+const sdk = require('@percy/sdk-utils/test/helper');
 
 module.exports = on => {
-  let percyServer;
+  // start a mock testing site
+  sdk.testsite.mock().then(() => {
+    process.on('exit', sdk.testsite.close);
+  });
 
-  // register mocking tasks
+  // register sdk tasks
   on('task', {
-    // start mock percy server
-    async 'mock:start'() {
-      percyServer = percyServer || await createTestServer({
-        default: () => [200, 'application/json', { success: true }]
-      }, 5338);
-
+    'sdk:setup': async () => {
+      if (!sdk.server) await sdk.setup();
       return null;
     },
 
-    // stop mock percy server
-    async 'mock:stop'() {
-      await percyServer.close();
-      percyServer = null;
+    'sdk:teardown': async () => {
+      await sdk.teardown();
+      delete sdk.server;
       return null;
     },
 
-    // yeilds to requests made to the mock percy server
-    'mock:requests'() {
-      return percyServer.requests;
+    'sdk:server:requests': () => {
+      return sdk.server.requests;
     },
 
-    // mocks a healthcheck failure
-    'mock:healthcheck:fail'() {
-      percyServer.reply('/percy/healthcheck', () => Promise.reject(new Error()));
+    'sdk:test:failure': (...a) => {
+      sdk.test.failure(...a);
       return null;
     },
 
-    // mocks a healthcheck error
-    'mock:healthcheck:error'() {
-      percyServer.reply('/percy/healthcheck', req => req.connection.destroy());
+    'sdk:test:error': (...a) => {
+      sdk.test.error(...a);
       return null;
     },
 
-    // mocks a snapshot error
-    'mock:snapshot:error'() {
-      percyServer.reply('/percy/snapshot', () => (
-        [400, 'application/json', { success: false, error: 'testing' }]
-      ));
-
+    log: (...a) => {
+      console.log(...a);
       return null;
     }
   });
