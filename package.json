@@ -23,23 +23,25 @@
     "test:coverage": "yarn test && yarn coverage",
     "test:types": "tsd"
   },
+  "dependencies": {
+    "@percy/sdk-utils": "^1.0.0-beta.28"
+  },
   "peerDependencies": {
-    "@percy/cli": ">=1",
     "cypress": ">=3"
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.8.1",
-    "@percy/cli": "^1.0.0-beta.15",
+    "@percy/cli": "^1.0.0-beta.28",
     "babel-plugin-istanbul": "^6.0.0",
-    "cypress": "^5.1.0",
+    "cypress": "^6.3.0",
     "eslint": "^7.9.0",
-    "eslint-config-standard": "^14.1.1",
+    "eslint-config-standard": "^16.0.2",
     "eslint-plugin-cypress": "^2.11.2",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
+    "eslint-plugin-standard": "^5.0.0",
     "nyc": "^15.1.0",
-    "tsd": "^0.13.1"
+    "tsd": "^0.14.0"
   }
 }
